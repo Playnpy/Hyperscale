@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYPERSCALE — Compute Empire</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230B0E14%22/><rect x=%2222%22 y=%2222%22 width=%2222%22 height=%2222%22 fill=%22%234FD8E8%22/><rect x=%2256%22 y=%2222%22 width=%2222%22 height=%2222%22 fill=%22%23F5A623%22/><rect x=%2222%22 y=%2256%22 width=%2222%22 height=%2222%22 fill=%22%233ECF8E%22/><rect x=%2256%22 y=%2256%22 width=%2222%22 height=%2222%22 fill=%22%239B7EF0%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== BOOT / INTRO SCREEN ===================== -->
+<div id="boot-screen" class="boot-screen">
+  <div class="boot-card">
+    <div class="boot-logo">
+      <span class="logo-glyph">▦▥</span>
+      <h1>HYPERSCALE</h1>
+    </div>
+    <p class="boot-sub">Build, cool and sell the compute power that runs the world's AI.</p>
+    <p class="boot-goal">🎯 <b>Goal:</b> keep your daily cash flow positive by fulfilling contracts, grow your reputation and compute capacity, and expand into a full hyperscaler empire — all without going bankrupt. There's no ceiling: rare materials, advanced hardware and prestige runs await deep into the late game.</p>
+    <div class="boot-stats">
+      <div><span class="dot dot-cyan"></span>Compute</div>
+      <div><span class="dot dot-amber"></span>Power</div>
+      <div><span class="dot dot-green"></span>Cash</div>
+      <div><span class="dot dot-violet"></span>Research</div>
+    </div>
+    <label class="boot-field">
+      <span>Operator name</span>
+      <input id="operator-name" type="text" maxlength="20" placeholder="e.g. NIMBUS DC-01">
+    </label>
+    <button id="btn-start" class="btn btn-primary btn-lg">Launch operations</button>
+    <button id="btn-continue" class="btn btn-ghost btn-lg hidden">Resume saved game</button>
+    <p class="boot-foot">Automatic local save · No account required</p>
+  </div>
+</div>
+
+<!-- ===================== GAME SHELL ===================== -->
+<div id="app" class="app hidden">
+
+  <!-- TOP TICKER / STATUS BAR -->
+  <header class="ticker">
+    <div class="ticker-brand">
+      <span class="logo-glyph small">▦▥</span>
+      <div class="brand-text">
+        <strong id="hud-operator">NEXUS</strong>
+        <small id="hud-title">Data Center Tycoon</small>
+      </div>
+    </div>
+
+    <div class="ticker-stats">
+      <div class="stat" title="Your money. Earned by completing contracts, spent on buildings, staff and daily upkeep. Keep the flow below positive.">
+        <span class="stat-label">CASH</span>
+        <span class="stat-value mono" id="hud-cash">$0</span>
+        <span class="stat-sub mono" id="hud-netflow">+$0/day</span>
+      </div>
+      <div class="stat" title="Electricity capacity vs. usage. Solar/Gas/Nuclear produce power; every other building consumes it.">
+        <span class="stat-label">POWER</span>
+        <span class="stat-value mono" id="hud-power">0/0 MW</span>
+        <div class="stat-bar"><div class="stat-bar-fill fill-amber" id="bar-power"></div></div>
+      </div>
+      <div class="stat" title="General-purpose compute for Inference and Storage contracts.">
+        <span class="stat-label">CPU</span>
+        <span class="stat-value mono" id="hud-cpu">0/0 PF</span>
+        <div class="stat-bar"><div class="stat-bar-fill fill-cyan" id="bar-cpu"></div></div>
+      </div>
+      <div class="stat" title="AI training compute — the highest-paying contracts need this.">
+        <span class="stat-label">GPU</span>
+        <span class="stat-value mono" id="hud-gpu">0/0 PF</span>
+        <div class="stat-bar"><div class="stat-bar-fill fill-violet" id="bar-gpu"></div></div>
+      </div>
+      <div class="stat" title="Client trust. Completing contracts raises it; failed contracts, blackouts and dirty power (Gas) lower it.">
+        <span class="stat-label">REP</span>
+        <span class="stat-value mono" id="hud-rep">50</span>
+        <div class="stat-bar"><div class="stat-bar-fill fill-green" id="bar-rep"></div></div>
+      </div>
+      <div class="stat" title="Research points. Earned from R&D facilities and Data Scientists. Spend them in the R&D tab.">
+        <span class="stat-label">R&amp;D</span>
+        <span class="stat-value mono" id="hud-research">0</span>
+      </div>
+      <div class="stat hidden" id="hud-rare-stat" title="Rare alloys. Sourced from your Supply Chain facility. Required for the most advanced tier-2 buildings and unlocks.">
+        <span class="stat-label">ALLOYS</span>
+        <span class="stat-value mono" id="hud-rare">0</span>
+      </div>
+      <div class="stat hidden" id="hud-core-stat" title="Singularity cores. Refined from rare alloys by a Fabrication Complex. The gate to every tier-3 building and program.">
+        <span class="stat-label">CORES</span>
+        <span class="stat-value mono" id="hud-core">0</span>
+      </div>
+    </div>
+
+    <div class="ticker-time">
+      <div class="day-counter">
+        <span class="stat-label">DAY</span>
+        <span class="stat-value mono" id="hud-day">1</span>
+      </div>
+      <div class="speed-controls">
+        <button class="speed-btn" data-speed="0" title="Pause">⏸</button>
+        <button class="speed-btn active" data-speed="1" title="Normal speed">1×</button>
+        <button class="speed-btn" data-speed="2" title="Fast speed">2×</button>
+        <button class="speed-btn" data-speed="4" title="Very fast speed">4×</button>
+      </div>
+      <button id="btn-save" class="btn btn-ghost btn-sm" title="Save">💾</button>
+      <button id="btn-help" class="btn btn-ghost btn-sm" title="Guide">❓</button>
+      <button id="btn-menu" class="btn btn-ghost btn-sm" title="Menu">⋮</button>
+    </div>
+  </header>
+
+  <!-- ALERT / TOAST ROW (top-left so it never covers the dashboard) -->
+  <div id="toast-row" class="toast-row"></div>
+
+  <main class="main">
+    <!-- FACILITY DASHBOARD -->
+    <section class="dashboard">
+      <div class="dashboard-header">
+        <h2>Facilities</h2>
+      </div>
+      <p class="campus-hint">⚡ <b>Power</b> feeds every facility · 💻 <b>CPU/GPU</b> compute is what you sell — accept a Contract to turn idle compute into cash · 🛡 <b>Cooling/Security</b> protect what you've built · 🧪 <b>R&amp;D</b> generates research · 📦 <b>Supply Chain</b> unlocks with research and sources rare alloys for advanced hardware.</p>
+      <div id="tip-banner" class="tip-banner hidden">
+        <div class="tip-banner-text">
+          <strong>Quick start</strong>
+          <ul>
+            <li>You already have a free <b>Solar Farm + CPU Rack</b> running, and a <b>7-day grace period</b> with reduced costs.</li>
+            <li>Open <b>Contracts</b> and accept the small starter contract from Local Pilot Co. to start earning cash immediately.</li>
+            <li>Watch the small <b>+/- $/day</b> number under CASH — it tells you if you're gaining or losing money right now.</li>
+            <li>Click a facility tile below to build inside it. Hire an <b>Account Manager</b> later to automate contract-picking.</li>
+          </ul>
+        </div>
+        <button id="tip-banner-close" class="btn btn-ghost btn-sm" title="Dismiss">✕</button>
+      </div>
+      <div id="category-grid" class="category-grid"></div>
+    </section>
+
+    <!-- SIDE DECK -->
+    <aside class="deck">
+      <nav class="deck-tabs">
+        <button class="deck-tab active" data-tab="staff">Staff</button>
+        <button class="deck-tab" data-tab="contracts">Contracts <span id="badge-contracts" class="badge hidden">0</span></button>
+        <button class="deck-tab" data-tab="research">R&amp;D</button>
+        <button class="deck-tab" data-tab="log">Log</button>
+      </nav>
+
+      <div class="deck-panels">
+        <div class="deck-panel active" id="panel-staff"></div>
+        <div class="deck-panel" id="panel-contracts"></div>
+        <div class="deck-panel" id="panel-research"></div>
+        <div class="deck-panel" id="panel-log"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="statusbar">
+    <div id="statusbar-msg">Welcome to HYPERSCALE. Open a facility to place your first power source.</div>
+    <div id="statusbar-achv" class="statusbar-achv"></div>
+  </footer>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div id="modal-box" class="modal-box"></div>
+</div>
+
+<!-- ===================== GUIDED TUTORIAL ===================== -->
+<div id="tutorial-overlay" class="tutorial-overlay hidden">
+  <div id="tutorial-highlight" class="tutorial-highlight"></div>
+  <div id="tutorial-card" class="tutorial-card">
+    <div class="tutorial-step-label" id="tutorial-step-label">Step 1 of 10</div>
+    <h3 id="tutorial-title"></h3>
+    <p id="tutorial-text"></p>
+    <div class="tutorial-actions">
+      <button id="tutorial-skip" class="btn btn-ghost btn-sm">Skip tutorial</button>
+      <div class="tutorial-nav">
+        <button id="tutorial-back" class="btn btn-ghost btn-sm">Back</button>
+        <button id="tutorial-next" class="btn btn-primary btn-sm">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
