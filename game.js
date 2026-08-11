@@ -1052,7 +1052,6 @@ function advanceDay(){
 
   s.day++;
   renderAll();
-  autoSave();
 }
 
 function setSpeed(sp){
@@ -1074,6 +1073,7 @@ function renderAll(){
   renderResearchPanel();
   renderLogPanel();
   renderTipBanner();
+  autoSave(); // every state-changing action routes through here, so this is the single save point
 }
 
 function renderTipBanner(){
@@ -1656,6 +1656,11 @@ function startGame(existing){
 window.addEventListener('DOMContentLoaded', ()=>{
   initTabs();
   initSpeedControls();
+
+  // Safety net: force a save if the tab is closed, refreshed, or backgrounded —
+  // covers any future code path that mutates state without going through renderAll().
+  window.addEventListener('beforeunload', ()=>{ if (state) autoSave(); });
+  document.addEventListener('visibilitychange', ()=>{ if (state && document.visibilityState==='hidden') autoSave(); });
 
   document.getElementById('modal-overlay').addEventListener('click', (e)=>{
     if (e.target.id==='modal-overlay') closeModal();
