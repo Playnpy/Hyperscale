@@ -1668,11 +1668,14 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
   const existing = loadSave();
   if (existing){
-    document.getElementById('btn-continue').classList.remove('hidden');
-    document.getElementById('btn-continue').addEventListener('click', ()=>startGame(existing));
+    // Auto-resume: a returning player with a save shouldn't have to see the boot
+    // screen or re-type their name — just drop them back into their campus.
+    startGame(existing);
+    toast(`Welcome back, ${existing.operator}.`, 'good');
+  } else {
+    document.getElementById('btn-start').addEventListener('click', ()=>startGame(null));
+    document.getElementById('operator-name').addEventListener('keydown', (e)=>{ if (e.key==='Enter') startGame(null); });
   }
-  document.getElementById('btn-start').addEventListener('click', ()=>startGame(null));
-  document.getElementById('operator-name').addEventListener('keydown', (e)=>{ if (e.key==='Enter') startGame(null); });
 
   document.getElementById('btn-save').addEventListener('click', ()=>{ autoSave(); toast('Game saved.', 'good'); });
   document.getElementById('btn-menu').addEventListener('click', openMenuModal);
